@@ -1,11 +1,15 @@
 package edu.cnm.deepdive.quotes.model.entity;
 
 import java.util.Date;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.hibernate.annotations.CreationTimestamp;
@@ -14,60 +18,59 @@ import org.springframework.lang.NonNull;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
 @Entity
-public class Source {
+public class Quote {
 
-  @NonNull
   @Id
   @GeneratedValue(strategy = GenerationType.AUTO)
-  @Column(name = "source_id", nullable = false, updatable = false)
+  @Column(name = "quote_id", nullable = false, updatable = false)
   private Long id;
 
-  @Column(length = 100, nullable = false, unique = true)
-  private String name;
-
-  @NonNull
   @CreationTimestamp
   @Temporal(TemporalType.TIMESTAMP)
-  @Column
+  @Column(nullable = false, updatable = false)
   private Date created;
 
-  @NonNull
   @UpdateTimestamp
   @Temporal(TemporalType.TIMESTAMP)
   @Column(nullable = false)
   private Date updated;
 
+  @NonNull
+  @Column(length = 4096, nullable = false)
+  private String text;
+
+  @ManyToOne(fetch = FetchType.EAGER,
+      cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+  @JoinColumn(name = "source_id")
+  private Source source;
+
   public Long getId() {
     return id;
   }
 
-  public String getName() {
-    return name;
-  }
-
-  @NonNull
   public Date getCreated() {
     return created;
   }
 
-  @NonNull
   public Date getUpdated() {
     return updated;
   }
 
-  public void setId(Long id) {
-    this.id = id;
+  @NonNull
+  public String getText() {
+    return text;
   }
 
-  public void setName(String name) {
-    this.name = name;
+  public void setText(@NonNull String text) {
+    this.text = text;
   }
 
-  public void setCreated(@NonNull Date created) {
-    this.created = created;
+  public Source getSource() {
+    return source;
   }
 
-  public void setUpdated(@NonNull Date updated) {
-    this.updated = updated;
+  public void setSource(Source source) {
+    this.source = source;
   }
+
 }
