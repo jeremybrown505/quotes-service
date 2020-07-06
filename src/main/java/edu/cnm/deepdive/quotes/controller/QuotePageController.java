@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,16 +21,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+@Controller
 @RequestMapping("/quotes")
-public class QuoteController {
+public class QuotePageController {
 
   private final QuoteRepository quoteRepository;
   private final SourceRepository sourceRepository;
   private final TagRepository tagRepository;
 
   @Autowired
-  public QuoteController(QuoteRepository quoteRepository,
+  public QuotePageController(QuoteRepository quoteRepository,
       SourceRepository sourceRepository,
       TagRepository tagRepository) {
     this.quoteRepository = quoteRepository;
@@ -36,34 +38,15 @@ public class QuoteController {
     this.tagRepository = tagRepository;
   }
 
-  @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-  public Iterable<Quote> get() {
-    return quoteRepository.getAllByOrderByTextAsc();
+  @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
+  public String get(Model model) {
+      model.addAttribute("quotes", quoteRepository.getAllByOrderByTextAsc());
+      return "list";
   }
 
-  @PostMapping(
-      consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-  @ResponseStatus(HttpStatus.CREATED)
-  public Quote post(@RequestBody Quote quote) {
-    if (quote.getSource() != null && quote.getSource().getId() != null) {
-      quote.setSource(
-          sourceRepository.findById(
-              quote.getSource().getId()
-          ).orElseThrow(NoSuchElementException::new)
-      );
-    }
-    List<Tag> resolvedTags = quote.getTags().stream()
-        .map((tag) -> (tag.getId() == null) ?
-            tag : tagRepository.findById(tag.getId()).orElseThrow(NoSuchElementException::new))
-        .collect(Collectors.toList());
-    quote.getTags().clear();
-    quote.getTags().addAll(resolvedTags);
-    return quoteRepository.save(quote);
-  }
-
-  @GetMapping(value = "/{id:\\d+}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Quote get(@PathVariable long id) {
-    return quoteRepository.findById(id).orElseThrow(NoSuchElementException::new);
-  }
+//  @GetMapping(value = "/{id:\\d+}", produces = MediaType.TEXT_HTML_VALUE)
+//  public String get(@PathVariable long id, Model model) {
+//    return quoteRepository.findById(id).orElseThrow(NoSuchElementException::new);
+//  }
 
 }
