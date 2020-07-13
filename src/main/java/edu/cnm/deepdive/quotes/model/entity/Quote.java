@@ -135,4 +135,11 @@ public class Quote implements FlatQuote {
     return (id != null) ? entityLinks.linkForItemResource(Quote.class, id).toUri() : null;
   }
 
+  public User getContributor() {
+    return contributor;
+  }
+
+  public void setContributor(User contributor) {
+    this.contributor = contributor;
+  }
 }
